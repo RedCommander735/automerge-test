@@ -78,7 +78,7 @@ export function insertNestedValue(d: Root, path: number[], insert: CompositeItem
 function getChildById(parent: CompositeFullItem, id: number): CompositeItem | null {
     if (parent.identifier === 'item') { return null }
     for (const task of parent.tasks) {
-        if (task.id == id) {
+        if (task.id === id) {
             return task
         }
     }
