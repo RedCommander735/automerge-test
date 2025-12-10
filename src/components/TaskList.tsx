@@ -64,13 +64,12 @@ export class Root implements Container, Searchable {
 export function insertNestedValue(d: Root, path: number[], insert: CompositeItem ) {
     let currentValue: CompositeFullItem = d;
     path.forEach((id) => {
-        if (currentValue.identifier === 'item') { throw Error("Items do not have children") }
-        for (const task of currentValue.tasks) {
-            if (task.id == id) {
-                currentValue = task
-                break;
-            }
+        const nestedValue = getChildById(currentValue, id)
+        
+        if (nestedValue == null) {
+            throw Error("ID does not exist")
         }
+        currentValue = nestedValue;
     })
 
     currentValue.tasks.push(insert)
