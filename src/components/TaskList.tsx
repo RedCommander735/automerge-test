@@ -61,7 +61,7 @@ export class Root implements Container, Searchable {
     }
 }
 
-function insertNestedValue(d: Root, path: number[], insert: CompositeItem ) {
+export function insertNestedValue(d: Root, path: number[], insert: CompositeItem ) {
     let currentValue: CompositeFullItem = d;
     path.forEach((id) => {
         const nestedValue = getChildById(currentValue, id)
