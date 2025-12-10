@@ -14,6 +14,7 @@ import {
   Change,
 } from "@automerge/react";
 import { getOrCreateRoot, RootDocument } from "./rootDoc.ts";
+import { Root } from "./components/TaskList.tsx";
 
 const repo = new Repo({
   network: [
@@ -29,7 +30,7 @@ declare global {
   interface Window {
     repo: Repo;
     // We also add the handle to the global window object for debugging
-    handle: DocHandle<RootDocument>;
+    handle: DocHandle<Root>;
     changes: Change[];
   }
 }

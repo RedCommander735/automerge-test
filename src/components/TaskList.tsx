@@ -64,11 +64,13 @@ export class Root implements Container, Searchable {
 export function insertNestedValue(d: Root, path: number[], insert: CompositeItem ) {
     let currentValue: CompositeFullItem = d;
     path.forEach((id) => {
-        const nestedValue = getChildById(currentValue, id)
-        if (nestedValue == null) {
-            throw Error("ID does not exist")
+        if (currentValue.identifier === 'item') { throw Error("Items do not have children") }
+        for (const task of currentValue.tasks) {
+            if (task.id == id) {
+                currentValue = task
+                break;
+            }
         }
-        currentValue = nestedValue;
     })
 
     currentValue.tasks.push(insert)
@@ -76,11 +78,11 @@ export function insertNestedValue(d: Root, path: number[], insert: CompositeItem
 
 function getChildById(parent: CompositeFullItem, id: number): CompositeItem | null {
     if (parent.identifier === 'item') { return null }
-    parent.tasks.forEach((task) => {
-        if (task.id === id) {
+    for (const task of parent.tasks) {
+        if (task.id == id) {
             return task
         }
-    })
+    }
     return null
 }
 
