@@ -9,6 +9,8 @@ export default defineConfig({
 
   build: {
     target: "esnext",
+    minify: false,
+    sourcemap: "inline"
   },
 
   plugins: [wasm(), react()],
