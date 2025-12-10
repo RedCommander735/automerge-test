@@ -1,77 +1,108 @@
 import "@picocss/pico/css/pico.min.css";
 import "../index.css";
-import { AutomergeUrl, useDocument, updateText } from "@automerge/react";
+import { AutomergeUrl, useDocument } from "@automerge/react";
+import {FolderComponent} from "./FolderComponent.tsx";
+import React from "react";
 
-export interface Task {
-  title: string;
-  done: boolean;
+export type CompositeFullItem = TaskItem | TaskListItem | Root;
+export type CompositeItem = TaskItem | TaskListItem;
+
+interface Item {
+    title: string;
+    id: number;
+    parentIds: number[]
 }
 
-export interface TaskList {
-  title: string;
-  tasks: Task[];
+interface Searchable {
+    identifier: 'root' | 'list' | 'item'
 }
 
-// A helper function to consistently initialize a task list.
-export function initTaskList() {
-  return {
-    title: `TODO: ${new Date().toLocaleString()}`,
-    tasks: [{ done: false, title: "" }],
-  };
+interface Container {
+    tasks: CompositeItem[];
+}
+
+export class TaskItem implements Item, Searchable {
+    title: string;
+    id: number;
+    parentIds: number[];
+    identifier: 'item'
+
+    constructor(id: number, parentIds: number[]) {
+        this.title = "";
+        this.id = id
+        this.parentIds = parentIds;
+        this.identifier = 'item'
+    }
+}
+
+export class TaskListItem implements Item, Container, Searchable {
+    tasks: CompositeItem[];
+    title: string;
+    id: number;
+    parentIds: number[];
+    identifier: 'list'
+
+    constructor(id: number, parentIds: number[]) {
+        this.title = "";
+        this.tasks = [];
+        this.id = id
+        this.parentIds = parentIds;
+        this.identifier = 'list'
+    }
+}
+
+export class Root implements Container, Searchable {
+    tasks: CompositeItem[];
+    identifier: 'root'
+
+    constructor() {
+        this.tasks = [];
+        this.identifier = 'root'
+    }
+}
+
+function insertNestedValue(d: Root, path: number[], insert: CompositeItem ) {
+    let currentValue: CompositeFullItem = d;
+    path.forEach((id) => {
+        const nestedValue = getChildById(currentValue, id)
+        if (nestedValue == null) {
+            throw Error("ID does not exist")
+        }
+        currentValue = nestedValue;
+    })
+
+    currentValue.tasks.push(insert)
+}
+
+function getChildById(parent: CompositeFullItem, id: number): CompositeItem | null {
+    if (parent.identifier === 'item') { return null }
+    parent.tasks.forEach((task) => {
+        if (task.id === id) {
+            return task
+        }
+    })
+    return null
 }
 
 export const TaskList: React.FC<{
   docUrl: AutomergeUrl;
 }> = ({ docUrl }) => {
-  const [doc, changeDoc] = useDocument<TaskList>(docUrl, {
+  const [doc, changeDoc] = useDocument<Root>(docUrl, {
     // This hooks the `useDocument` into reacts suspense infrastructure so the whole component
     // only renders once the document is loaded
     suspense: true,
   });
 
+  function insert(path: number[], insert: CompositeItem) {
+      changeDoc((d) => insertNestedValue(d, path, insert))
+  }
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => {
-          changeDoc((d) =>
-            d.tasks.unshift({
-              title: "",
-              done: false,
-            }),
-          );
-        }}
-      >
-        <b>+</b> New task
-      </button>
-
       <div id="task-list">
-        {doc &&
-          doc.tasks?.map(({ title, done }, index) => (
-            <div className="task" key={index}>
-              <input
-                type="checkbox"
-                checked={done}
-                onChange={() =>
-                  changeDoc((d) => {
-                    d.tasks[index].done = !d.tasks[index].done;
-                  })
-                }
-              />
-
-              <input
-                type="text"
-                placeholder="What needs doing?"
-                value={title || ""}
-                onChange={(e) =>
-                  changeDoc((d) => {
-                    updateText(d, ["tasks", index, "title"], e.target.value);
-                  })
-                }
-                style={done ? { textDecoration: "line-through" } : {}}
-              />
-            </div>
-          ))}
+        <div className="task">
+            <FolderComponent item={doc} insert={insert} margin={0}/>
+        </div>
       </div>
     </>
   );

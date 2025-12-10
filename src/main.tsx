@@ -10,6 +10,8 @@ import {
   IndexedDBStorageAdapter,
   RepoContext,
   DocHandle,
+  getAllChanges,
+  Change,
 } from "@automerge/react";
 import { getOrCreateRoot, RootDocument } from "./rootDoc.ts";
 
@@ -28,6 +30,7 @@ declare global {
     repo: Repo;
     // We also add the handle to the global window object for debugging
     handle: DocHandle<RootDocument>;
+    changes: Change[];
   }
 }
 window.repo = repo;
@@ -35,6 +38,9 @@ window.repo = repo;
 // Depending if we have an AutomergeUrl, either find or create the document
 const rootDocUrl = getOrCreateRoot(repo);
 window.handle = await repo.find(rootDocUrl);
+
+window.changes = getAllChanges(window.handle.doc())
+
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -45,3 +51,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </Suspense>
   </React.StrictMode>,
 );
+

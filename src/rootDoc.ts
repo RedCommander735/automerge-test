@@ -1,4 +1,5 @@
 import { AutomergeUrl, Repo } from "@automerge/react";
+import { Root } from "./components/TaskList"
 
 const ROOT_DOC_URL_KEY = "root-doc-url";
 
@@ -18,7 +19,7 @@ export const getOrCreateRoot = (repo: Repo): AutomergeUrl => {
   }
 
   // Otherwise create one and (synchronously) store it
-  const root = repo.create<RootDocument>({ taskLists: [] });
+  const root = repo.create<Root>(new Root());
   localStorage.setItem(ROOT_DOC_URL_KEY, root.url);
   return root.url;
 };
